@@ -1,0 +1,6 @@
+name: "ReRoute-Bungee"
+main: "com.github.cm360.reroute.bungee.ReRoutePlugin"
+version: "1.0.0"
+author: "cm360"
+api-version: 1.16
+depend: [uLib]
