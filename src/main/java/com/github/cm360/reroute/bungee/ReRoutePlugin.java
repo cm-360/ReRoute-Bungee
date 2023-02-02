@@ -4,13 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import com.github.cm360.reroute.bungee.hook.InitialHandlerHook;
-
-import eu.software4you.bungeecord.plugin.ExtendedProxyPlugin;
-import eu.software4you.common.collection.Pair;
-import eu.software4you.transform.HookInjector;
+import eu.software4you.ulib.bungeecord.plugin.ExtendedProxyPlugin;
+import eu.software4you.ulib.core.impl.tuple.PairImpl;
+import eu.software4you.ulib.core.inject.HookInjection;
+import eu.software4you.ulib.core.inject.HookPoint;
+import eu.software4you.ulib.core.inject.InjectUtil;
+import eu.software4you.ulib.core.tuple.Pair;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.PendingConnection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -18,6 +20,7 @@ import net.md_5.bungee.api.event.LoginEvent;
 import net.md_5.bungee.api.event.ServerConnectEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
+import net.md_5.bungee.protocol.packet.Handshake;
 
 public class ReRoutePlugin extends ExtendedProxyPlugin implements Listener {
 
@@ -26,7 +29,23 @@ public class ReRoutePlugin extends ExtendedProxyPlugin implements Listener {
 	
 	@Override
     public void onLoad() {
-        HookInjector.hook(new InitialHandlerHook(this));
+		ReRoutePlugin plugin = this;
+		new HookInjection()
+			.addHook("net.md_5.bungee.connection.InitialHandler", "handle(Lnet/md_5/bungee/protocol/packet/Handshake;)V", InjectUtil.createHookingSpec(HookPoint.HEAD), (params, cb) -> {
+				try {
+					Handshake handshake = (Handshake) params[0];
+					String host = handshake.getHost();
+					if (host.contains("\0")) {
+						String[] hostSplit = host.split("\0");
+						if (hostSplit[1].equals("ReRoute-Fabric")) {
+							plugin.requestReroute((PendingConnection) cb.self().get(), hostSplit[2]);
+						}
+					}
+				} catch (Exception e) {
+					plugin.getLogger().log(Level.WARNING, "Error processing handshake packet", e);
+				}
+			}).injectNow();
+//        HookInjector.hook(new InitialHandlerHook(this));
     }
 	
 	@Override
@@ -53,7 +72,7 @@ public class ReRoutePlugin extends ExtendedProxyPlugin implements Listener {
 	}
 	
 	public synchronized void requestReroute(PendingConnection connection, String destinationName) {
-		pendingRoutes.put(connection, new Pair<String, Long>(destinationName, System.currentTimeMillis()));
+		pendingRoutes.put(connection, new PairImpl<String, Long>(destinationName, System.currentTimeMillis()));
 		getLogger().info(String.format("The connection from '%s' has requested to be rerouted to %s.", connection.getSocketAddress(), destinationName));
 	}
 	
@@ -65,7 +84,7 @@ public class ReRoutePlugin extends ExtendedProxyPlugin implements Listener {
 		if (routeRequest != null) {
 			String destinationName = routeRequest.getFirst();
 			getLogger().info(String.format("%s's next connection will attempt to be rerouted to %s.", connection.getName(), destinationName));
-			confirmedRoutes.put(event.getConnection().getUniqueId(), new Pair<String, Long>(destinationName, System.currentTimeMillis()));
+			confirmedRoutes.put(event.getConnection().getUniqueId(), new PairImpl<String, Long>(destinationName, System.currentTimeMillis()));
 		}
 	}
 	

@@ -14,10 +14,10 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <bungee.version>1.16-R0.5-SNAPSHOT</bungee.version>
-    <ulib.version>2.0.0-BETA-4</ulib.version>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <bungee.version>1.19-R0.1-SNAPSHOT</bungee.version>
+    <ulib.version>3.0.0-SNAPSHOT</ulib.version>
   </properties>
 
   <repositories>
@@ -28,8 +28,8 @@
     </repository>
     <!-- uLib -->
 	<repository>
-		<id>software4you-repo</id>
-		<url>https://repo.software4you.eu/</url>
+		<id>fluse1367-repo</id>
+		<url>https://repo.fluse.cc/</url>
 	</repository>
   </repositories>
 
@@ -40,14 +40,15 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.6.1</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <source>17</source>
+          <target>17</target>
         </configuration>
       </plugin>
     </plugins>
   </build>
 
   <dependencies>
+  	<!-- BungeeCord-API -->
     <dependency>
       <groupId>net.md-5</groupId>
       <artifactId>bungeecord-api</artifactId>
@@ -62,14 +63,21 @@
       <type>javadoc</type>
       <scope>provided</scope>
     </dependency>
+    <!-- uLib -->
 	<dependency>
-		<groupId>eu.software4you.ulib</groupId>
-		<artifactId>ulib-core-api</artifactId>
+        <groupId>eu.software4you.ulib-snapshot</groupId>
+        <artifactId>ulib-loader</artifactId>
+        <version>${ulib.version}</version>
+        <scope>provided</scope>
+    </dependency>
+	<dependency>
+		<groupId>eu.software4you.ulib-snapshot</groupId>
+		<artifactId>ulib-core</artifactId>
 		<version>${ulib.version}</version>
 	</dependency>
 	<dependency>
-		<groupId>eu.software4you.ulib</groupId>
-		<artifactId>ulib-bungeecord-api</artifactId>
+		<groupId>eu.software4you.ulib-snapshot</groupId>
+		<artifactId>ulib-bungeecord</artifactId>
 		<version>${ulib.version}</version>
 	</dependency>
   </dependencies>
